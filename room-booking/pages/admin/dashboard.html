@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Administrateur - RéservaSalle</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body class="font-[Poppins] bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="../../index.html" class="flex items-center">
+                        <i class="fas fa-calendar-alt text-blue-600 text-2xl mr-2"></i>
+                        <span class="text-xl font-semibold text-gray-800">RéservaSalle</span>
+                    </a>
+                </div>
+                <div class="hidden md:flex items-center space-x-4">
+                    <a href="manage-rooms.html" class="text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-door-open mr-1"></i>
+                        Gérer les Salles
+                    </a>
+                    <a href="manage-bookings.html" class="text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-calendar-check mr-1"></i>
+                        Gérer les Réservations
+                    </a>
+                    <button onclick="logout()" class="text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-sign-out-alt mr-1"></i>
+                        Déconnexion
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8">Dashboard Administrateur</h1>
+
+        <!-- Stats Cards -->
+        <div class="grid md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500">Total Salles</p>
+                        <h3 class="text-2xl font-bold" id="totalRooms">0</h3>
+                    </div>
+                    <i class="fas fa-door-open text-3xl text-blue-600"></i>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500">Réservations Aujourd'hui</p>
+                        <h3 class="text-2xl font-bold" id="todayBookings">0</h3>
+                    </div>
+                    <i class="fas fa-calendar-day text-3xl text-green-600"></i>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500">Conflits</p>
+                        <h3 class="text-2xl font-bold" id="conflicts">0</h3>
+                    </div>
+                    <i class="fas fa-exclamation-triangle text-3xl text-yellow-600"></i>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500">Total Utilisateurs</p>
+                        <h3 class="text-2xl font-bold" id="totalUsers">0</h3>
+                    </div>
+                    <i class="fas fa-users text-3xl text-purple-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Bookings -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Réservations Récentes</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salle</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Utilisateur</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Horaire</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentBookings" class="bg-white divide-y divide-gray-200">
+                        <!-- Recent bookings will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Room Status -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">État des Salles</h2>
+            <div id="roomStatus" class="grid md:grid-cols-3 gap-6">
+                <!-- Room status cards will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let rooms = [];
+        let bookings = [];
+        let users = [];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication
+            const userStr = localStorage.getItem('currentUser');
+            if (!userStr) {
+                window.location.href = '../../login.html';
+                return;
+            }
+            currentUser = JSON.parse(userStr);
+            
+            // Verify admin role
+            if (currentUser.role !== 'admin') {
+                window.location.href = '../../login.html';
+                return;
+            }
+
+            // Load data
+            await loadData();
+            updateDashboard();
+        });
+
+        // Load data
+        async function loadData() {
+            try {
+                const response = await fetch('/room-booking/assets/data/bookings.json');
+                const data = await response.json();
+                rooms = data.rooms;
+                bookings = data.bookings;
+                users = data.users;
+                
+                updateStats();
+                displayRecentBookings();
+                displayRoomStatus();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showToast('Erreur lors du chargement des données', 'error');
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('totalRooms').textContent = rooms.length;
+            document.getElementById('totalUsers').textContent = users.length;
+            
+            const today = new Date().toISOString().split('T')[0];
+            const todayBookings = bookings.filter(booking => 
+                booking.startTime.startsWith(today)
+            ).length;
+            document.getElementById('todayBookings').textContent = todayBookings;
+
+            // Simple conflict detection (overlapping bookings)
+            const conflicts = detectConflicts();
+            document.getElementById('conflicts').textContent = conflicts.length;
+        }
+
+        // Display recent bookings
+        function displayRecentBookings() {
+            const recentBookings = document.getElementById('recentBookings');
+            const sortedBookings = [...bookings].sort((a, b) => 
+                new Date(b.startTime) - new Date(a.startTime)
+            ).slice(0, 5);
+
+            recentBookings.innerHTML = sortedBookings.map(booking => {
+                const room = rooms.find(r => r.id === booking.roomId);
+                const user = users.find(u => u.id === booking.userId);
+                return `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">${room?.name || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${user?.name || 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${formatDate(booking.startTime)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            ${formatTime(booking.startTime)} - ${formatTime(booking.endTime)}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                                ${booking.status === 'confirmed' ? 'Confirmé' : 'En attente'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <button onclick="viewBooking('${booking.id}')" class="text-blue-600 hover:text-blue-900 mr-3">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button onclick="cancelBooking('${booking.id}')" class="text-red-600 hover:text-red-900">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Display room status
+        function displayRoomStatus() {
+            const roomStatus = document.getElementById('roomStatus');
+            roomStatus.innerHTML = rooms.map(room => {
+                const currentBooking = getCurrentBooking(room.id);
+                const isOccupied = !!currentBooking;
+                
+                return `
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold">${room.name}</h3>
+                            <span class="status-indicator ${isOccupied ? 'status-occupied' : 'status-available'}"></span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-2">Capacité: ${room.capacity} personnes</p>
+                        ${isOccupied ? `
+                            <div class="mt-2 text-sm">
+                                <p class="text-gray-600">Occupée par: ${getUserName(currentBooking.userId)}</p>
+                                <p class="text-gray-600">Jusqu'à: ${formatTime(currentBooking.endTime)}</p>
+                            </div>
+                        ` : `
+                            <p class="text-sm text-green-600">Disponible</p>
+                        `}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Get current booking for a room
+        function getCurrentBooking(roomId) {
+            const now = new Date();
+            return bookings.find(booking => 
+                booking.roomId === roomId &&
+                new Date(booking.startTime) <= now &&
+                new Date(booking.endTime) >= now
+            );
+        }
+
+        // Detect booking conflicts
+        function detectConflicts() {
+            const conflicts = [];
+            for (let i = 0; i < bookings.length; i++) {
+                for (let j = i + 1; j < bookings.length; j++) {
+                    if (bookings[i].roomId === bookings[j].roomId) {
+                        const start1 = new Date(bookings[i].startTime);
+                        const end1 = new Date(bookings[i].endTime);
+                        const start2 = new Date(bookings[j].startTime);
+                        const end2 = new Date(bookings[j].endTime);
+
+                        if (start1 < end2 && start2 < end1) {
+                            conflicts.push([bookings[i], bookings[j]]);
+                        }
+                    }
+                }
+            }
+            return conflicts;
+        }
+
+        // Utility functions
+        function formatDate(dateStr) {
+            return new Date(dateStr).toLocaleDateString('fr-FR');
+        }
+
+        function formatTime(dateStr) {
+            return new Date(dateStr).toLocaleTimeString('fr-FR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function getUserName(userId) {
+            const user = users.find(u => u.id === userId);
+            return user ? user.name : 'Utilisateur inconnu';
+        }
+
+        // Action handlers
+        function viewBooking(bookingId) {
+            window.location.href = `manage-bookings.html?booking=${bookingId}`;
+        }
+
+        function cancelBooking(bookingId) {
+            if (confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')) {
+                bookings = bookings.filter(b => b.id !== bookingId);
+                showToast('Réservation annulée avec succès', 'success');
+                updateDashboard();
+            }
+        }
+
+        // Toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'error' ? 'bg-red-500' :
+                'bg-blue-500'
+            } text-white`;
+            
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Update dashboard
+        function updateDashboard() {
+            updateStats();
+            displayRecentBookings();
+            displayRoomStatus();
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = '../../login.html';
+        }
+    </script>
+</body>
+</html>
