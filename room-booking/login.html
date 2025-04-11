@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - RéservaSalle</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="font-[Poppins] bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center">
+                        <i class="fas fa-calendar-alt text-blue-600 text-2xl mr-2"></i>
+                        <span class="text-xl font-semibold text-gray-800">RéservaSalle</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login Section -->
+    <div class="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
+            <div>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                    Connexion
+                </h2>
+                <p class="mt-2 text-center text-sm text-gray-600">
+                    Accédez à votre espace personnel
+                </p>
+            </div>
+
+            <!-- Role Selection -->
+            <div class="flex justify-center space-x-4 mb-6">
+                <button id="userBtn" class="role-btn px-4 py-2 rounded-md bg-blue-600 text-white" onclick="switchRole('user')">
+                    <i class="fas fa-user mr-2"></i>
+                    Utilisateur
+                </button>
+                <button id="adminBtn" class="role-btn px-4 py-2 rounded-md bg-gray-200 text-gray-700" onclick="switchRole('admin')">
+                    <i class="fas fa-user-shield mr-2"></i>
+                    Administrateur
+                </button>
+            </div>
+
+            <form id="loginForm" class="mt-8 space-y-6" onsubmit="handleLogin(event)">
+                <input type="hidden" name="role" id="roleInput" value="user">
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <label for="email" class="sr-only">Email</label>
+                        <input id="email" name="email" type="email" required 
+                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
+                            placeholder="Email">
+                    </div>
+                    <div>
+                        <label for="password" class="sr-only">Mot de passe</label>
+                        <input id="password" name="password" type="password" required 
+                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
+                            placeholder="Mot de passe">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input id="remember-me" name="remember-me" type="checkbox" 
+                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="remember-me" class="ml-2 block text-sm text-gray-900">
+                            Se souvenir de moi
+                        </label>
+                    </div>
+
+                    <div class="text-sm">
+                        <a href="#" class="font-medium text-blue-600 hover:text-blue-500">
+                            Mot de passe oublié?
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit" 
+                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        Se connecter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Role switching functionality
+        function switchRole(role) {
+            document.getElementById('roleInput').value = role;
+            const userBtn = document.getElementById('userBtn');
+            const adminBtn = document.getElementById('adminBtn');
+
+            if (role === 'user') {
+                userBtn.classList.remove('bg-gray-200', 'text-gray-700');
+                userBtn.classList.add('bg-blue-600', 'text-white');
+                adminBtn.classList.remove('bg-blue-600', 'text-white');
+                adminBtn.classList.add('bg-gray-200', 'text-gray-700');
+            } else {
+                adminBtn.classList.remove('bg-gray-200', 'text-gray-700');
+                adminBtn.classList.add('bg-blue-600', 'text-white');
+                userBtn.classList.remove('bg-blue-600', 'text-white');
+                userBtn.classList.add('bg-gray-200', 'text-gray-700');
+            }
+        }
+
+        // Login form submission
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('roleInput').value;
+
+            console.log('Tentative de connexion avec:', { email, role }); // Debug log
+
+            try {
+                // Fetch users data
+                console.log('Chargement des données...'); // Debug log
+                const response = await fetch('/room-booking/assets/data/bookings.json');
+                const data = await response.json();
+                console.log('Données chargées:', data); // Debug log
+                
+                // Find user
+                const user = data.users.find(u => {
+                    console.log('Vérification utilisateur:', u.email, u.role); // Debug log
+                    return u.email === email && 
+                           u.password === password && 
+                           u.role === role;
+                });
+
+                if (user) {
+                    console.log('Utilisateur trouvé:', user); // Debug log
+                    // Store user info in localStorage
+                    const userInfo = {
+                        id: user.id,
+                        name: user.name,
+                        role: user.role,
+                        email: user.email
+                    };
+                    localStorage.setItem('currentUser', JSON.stringify(userInfo));
+
+                    // Redirect based on role
+                    if (role === 'admin') {
+                        window.location.href = '/room-booking/pages/admin/dashboard.html';
+                    } else {
+                        window.location.href = '/room-booking/pages/user/book-room.html';
+                    }
+                } else {
+                    console.log('Utilisateur non trouvé'); // Debug log
+                    showError('Email ou mot de passe incorrect');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la connexion:', error);
+                showError('Une erreur est survenue lors de la connexion');
+            }
+        }
+
+        // Error display
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4';
+            errorDiv.role = 'alert';
+            errorDiv.innerHTML = `
+                <span class="block sm:inline">${message}</span>
+                <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
+                    <svg class="fill-current h-6 w-6 text-red-500" role="button" onclick="this.parentElement.parentElement.remove()"
+                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <title>Close</title>
+                        <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+                    </svg>
+                </span>
+            `;
+            
+            const form = document.getElementById('loginForm');
+            form.parentNode.insertBefore(errorDiv, form.nextSibling);
+        }
+    </script>
+</body>
+</html>
