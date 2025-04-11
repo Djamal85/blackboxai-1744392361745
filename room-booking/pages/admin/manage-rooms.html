@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gérer les Salles - RéservaSalle</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body class="font-[Poppins] bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="../../index.html" class="flex items-center">
+                        <i class="fas fa-calendar-alt text-blue-600 text-2xl mr-2"></i>
+                        <span class="text-xl font-semibold text-gray-800">RéservaSalle</span>
+                    </a>
+                </div>
+                <div class="hidden md:flex items-center space-x-4">
+                    <a href="dashboard.html" class="text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-tachometer-alt mr-1"></i>
+                        Dashboard
+                    </a>
+                    <a href="manage-bookings.html" class="text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-calendar-check mr-1"></i>
+                        Gérer les Réservations
+                    </a>
+                    <button onclick="logout()" class="text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-sign-out-alt mr-1"></i>
+                        Déconnexion
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold">Gérer les Salles</h1>
+            <button onclick="openAddRoomModal()" 
+                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition flex items-center">
+                <i class="fas fa-plus mr-2"></i>
+                Ajouter une Salle
+            </button>
+        </div>
+
+        <!-- Room List -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="roomList">
+            <!-- Room cards will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Add/Edit Room Modal -->
+    <div id="roomModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full">
+            <h2 class="text-2xl font-bold mb-6" id="modalTitle">Ajouter une Salle</h2>
+            <form id="roomForm" onsubmit="handleRoomSubmit(event)">
+                <input type="hidden" id="roomId">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nom de la salle</label>
+                        <input type="text" id="roomName" required
+                            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Capacité</label>
+                        <input type="number" id="roomCapacity" required min="1"
+                            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea id="roomDescription" rows="3" required
+                            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                        <input type="url" id="roomImage" required
+                            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Équipements</label>
+                        <div class="space-y-2" id="equipmentList">
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" value="Projecteur" class="equipment-checkbox">
+                                <label>Projecteur</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" value="Tableau blanc" class="equipment-checkbox">
+                                <label>Tableau blanc</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" value="Système audio" class="equipment-checkbox">
+                                <label>Système audio</label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" value="Écran TV" class="equipment-checkbox">
+                                <label>Écran TV</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" onclick="closeModal()" 
+                        class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition">
+                        Annuler
+                    </button>
+                    <button type="submit" 
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+                        Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let rooms = [];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication
+            const userStr = localStorage.getItem('currentUser');
+            if (!userStr) {
+                window.location.href = '../../login.html';
+                return;
+            }
+            currentUser = JSON.parse(userStr);
+            
+            // Verify admin role
+            if (currentUser.role !== 'admin') {
+                window.location.href = '../../login.html';
+                return;
+            }
+
+            // Load data
+            await loadData();
+        });
+
+        // Load rooms data
+        async function loadData() {
+            try {
+                const response = await fetch('/room-booking/assets/data/bookings.json');
+                const data = await response.json();
+                rooms = data.rooms;
+                displayRooms();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showToast('Erreur lors du chargement des données', 'error');
+            }
+        }
+
+        // Display rooms
+        function displayRooms() {
+            const roomList = document.getElementById('roomList');
+            roomList.innerHTML = rooms.map(room => `
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <img src="${room.image}" alt="${room.name}" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-xl font-semibold">${room.name}</h3>
+                            <span class="bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded">
+                                ${room.capacity} personnes
+                            </span>
+                        </div>
+                        <p class="text-gray-600 mb-4">${room.description}</p>
+                        <div class="mb-4">
+                            <h4 class="font-medium mb-2">Équipements:</h4>
+                            <div class="flex flex-wrap gap-2">
+                                ${room.equipment.map(item => `
+                                    <span class="bg-gray-100 text-gray-800 text-sm px-2 py-1 rounded">
+                                        ${item}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="flex justify-end space-x-3">
+                            <button onclick="editRoom('${room.id}')" 
+                                class="text-blue-600 hover:text-blue-800">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteRoom('${room.id}')" 
+                                class="text-red-600 hover:text-red-800">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Open modal for adding a room
+        function openAddRoomModal() {
+            document.getElementById('modalTitle').textContent = 'Ajouter une Salle';
+            document.getElementById('roomId').value = '';
+            document.getElementById('roomForm').reset();
+            document.getElementById('roomModal').classList.remove('hidden');
+        }
+
+        // Open modal for editing a room
+        function editRoom(roomId) {
+            const room = rooms.find(r => r.id === roomId);
+            if (!room) return;
+
+            document.getElementById('modalTitle').textContent = 'Modifier la Salle';
+            document.getElementById('roomId').value = room.id;
+            document.getElementById('roomName').value = room.name;
+            document.getElementById('roomCapacity').value = room.capacity;
+            document.getElementById('roomDescription').value = room.description;
+            document.getElementById('roomImage').value = room.image;
+
+            // Set equipment checkboxes
+            const checkboxes = document.querySelectorAll('.equipment-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = room.equipment.includes(checkbox.value);
+            });
+
+            document.getElementById('roomModal').classList.remove('hidden');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('roomModal').classList.add('hidden');
+        }
+
+        // Handle room form submission
+        function handleRoomSubmit(event) {
+            event.preventDefault();
+
+            const roomId = document.getElementById('roomId').value;
+            const isEdit = !!roomId;
+
+            // Get selected equipment
+            const selectedEquipment = Array.from(document.querySelectorAll('.equipment-checkbox'))
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+
+            const roomData = {
+                id: isEdit ? roomId : (rooms.length + 1).toString(),
+                name: document.getElementById('roomName').value,
+                capacity: parseInt(document.getElementById('roomCapacity').value),
+                description: document.getElementById('roomDescription').value,
+                image: document.getElementById('roomImage').value,
+                equipment: selectedEquipment
+            };
+
+            if (isEdit) {
+                // Update existing room
+                rooms = rooms.map(room => room.id === roomId ? roomData : room);
+            } else {
+                // Add new room
+                rooms.push(roomData);
+            }
+
+            displayRooms();
+            closeModal();
+            showToast(`Salle ${isEdit ? 'modifiée' : 'ajoutée'} avec succès`, 'success');
+        }
+
+        // Delete room
+        function deleteRoom(roomId) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette salle ?')) {
+                rooms = rooms.filter(room => room.id !== roomId);
+                displayRooms();
+                showToast('Salle supprimée avec succès', 'success');
+            }
+        }
+
+        // Toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'error' ? 'bg-red-500' :
+                'bg-blue-500'
+            } text-white`;
+            
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = '../../login.html';
+        }
+    </script>
+</body>
+</html>
