@@ -1,0 +1,178 @@
+/* Custom styles to complement Tailwind CSS */
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Custom transitions */
+.transition {
+    transition: all 0.3s ease;
+}
+
+/* Custom shadows */
+.custom-shadow {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Card hover effect */
+.room-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.room-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Custom loading spinner */
+.loader {
+    border: 3px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 3px solid #3b82f6;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Toast notifications */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.toast.show {
+    opacity: 1;
+}
+
+/* Custom form styles */
+.form-input:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* Calendar styles */
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.calendar-day:hover:not(.calendar-day-disabled) {
+    background-color: #e5edff;
+}
+
+.calendar-day-selected {
+    background-color: #3b82f6;
+    color: white;
+    border-radius: 9999px;
+}
+
+.calendar-day-disabled {
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+/* Mobile menu animation */
+.mobile-menu {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+}
+
+.mobile-menu.open {
+    transform: translateX(0);
+}
+
+/* Custom button styles */
+.btn-primary {
+    @apply bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition;
+}
+
+.btn-secondary {
+    @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition;
+}
+
+.btn-danger {
+    @apply bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition;
+}
+
+/* Modal styles */
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-backdrop.show {
+    opacity: 1;
+}
+
+.modal-content {
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+}
+
+.modal-content.show {
+    transform: translateY(0);
+}
+
+/* Time slot styles */
+.time-slot {
+    @apply px-4 py-2 rounded-md cursor-pointer transition;
+}
+
+.time-slot-available {
+    @apply bg-green-100 text-green-800 hover:bg-green-200;
+}
+
+.time-slot-unavailable {
+    @apply bg-red-100 text-red-800 cursor-not-allowed;
+}
+
+.time-slot-selected {
+    @apply bg-blue-600 text-white;
+}
+
+/* Notification badge */
+.notification-badge {
+    @apply absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full;
+}
+
+/* Room status indicator */
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+.status-available {
+    background-color: #10B981;
+}
+
+.status-occupied {
+    background-color: #EF4444;
+}
+
+.status-maintenance {
+    background-color: #F59E0B;
+}
