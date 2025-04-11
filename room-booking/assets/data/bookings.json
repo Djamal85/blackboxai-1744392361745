@@ -1,0 +1,55 @@
+{
+  "rooms": [
+    {
+      "id": "1",
+      "name": "Salle de Conférence A",
+      "capacity": 20,
+      "description": "Grande salle équipée d'un projecteur et d'un tableau",
+      "image": "https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg",
+      "equipment": ["Projecteur", "Tableau blanc", "Système audio"]
+    },
+    {
+      "id": "2",
+      "name": "Salle de Réunion B",
+      "capacity": 10,
+      "description": "Salle moyenne idéale pour les réunions d'équipe",
+      "image": "https://images.pexels.com/photos/1181435/pexels-photo-1181435.jpeg",
+      "equipment": ["Écran TV", "Tableau blanc"]
+    },
+    {
+      "id": "3",
+      "name": "Salle de Formation C",
+      "capacity": 30,
+      "description": "Grande salle de formation avec disposition en classe",
+      "image": "https://images.pexels.com/photos/1181396/pexels-photo-1181396.jpeg",
+      "equipment": ["Projecteur", "Tableaux multiples", "Système audio"]
+    }
+  ],
+  "bookings": [
+    {
+      "id": "1",
+      "roomId": "1",
+      "userId": "user1",
+      "startTime": "2024-01-20T09:00:00",
+      "endTime": "2024-01-20T11:00:00",
+      "purpose": "Réunion d'équipe",
+      "status": "confirmed"
+    }
+  ],
+  "users": [
+    {
+      "id": "admin1",
+      "name": "Admin Principal",
+      "role": "admin",
+      "email": "admin@example.com",
+      "password": "admin123"
+    },
+    {
+      "id": "user1",
+      "name": "Jean Dupont",
+      "role": "user",
+      "email": "jean@example.com",
+      "password": "user123"
+    }
+  ]
+}
